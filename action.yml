@@ -1,5 +1,5 @@
 name: "release extension"
-description: "Generate a release for a precompiled gh extension"
+description: "Generate a release for a precompiled sunbeam extension"
 inputs:
   gpg_fingerprint:
     description: "GPG fingerprint to use for signing releases"
@@ -22,6 +22,5 @@ runs:
       env:
         GITHUB_REPOSITORY: ${{ github.repository }}
         GITHUB_TOKEN: ${{ github.token }}
-        GH_EXT_BUILD_SCRIPT: ${{ inputs.build_script_override }}
         GPG_FINGERPRINT: ${{ inputs.gpg_fingerprint }}
       shell: bash

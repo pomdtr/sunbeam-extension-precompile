@@ -29,26 +29,22 @@ if [[ $tag = *-* ]]; then
   prerelease="--prerelease"
 fi
 
-if [ -n "$GH_EXT_BUILD_SCRIPT" ]; then
-  echo "invoking build script override $GH_EXT_BUILD_SCRIPT"
-  ./"$GH_EXT_BUILD_SCRIPT" "$tag"
-else
-  IFS=$'\n' read -d '' -r -a supported_platforms < <(go tool dist list) || true
 
-  for p in "${platforms[@]}"; do
-    goos="${p%-*}"
-    goarch="${p#*-}"
-    if [[ " ${supported_platforms[*]} " != *" ${goos}/${goarch} "* ]]; then
-      echo "warning: skipping unsupported platform $p" >&2
-      continue
-    fi
-    ext=""
-    if [ "$goos" = "windows" ]; then
-      ext=".exe"
-    fi
-    GOOS="$goos" GOARCH="$goarch" CGO_ENABLED="${CGO_ENABLED:-0}" go build -trimpath -ldflags="-s -w" -o "dist/${p}${ext}"
-  done
-fi
+IFS=$'\n' read -d '' -r -a supported_platforms < <(go tool dist list) || true
+
+for p in "${platforms[@]}"; do
+  goos="${p%-*}"
+  goarch="${p#*-}"
+  if [[ " ${supported_platforms[*]} " != *" ${goos}/${goarch} "* ]]; then
+    echo "warning: skipping unsupported platform $p" >&2
+    continue
+  fi
+  ext=""
+  if [ "$goos" = "windows" ]; then
+    ext=".exe"
+  fi
+  GOOS="$goos" GOARCH="$goarch" CGO_ENABLED="${CGO_ENABLED:-0}" go build -trimpath -ldflags="-s -w" -o "dist/${p}${ext}"
+done
 
 assets=()
 for f in dist/*; do
@@ -60,12 +56,6 @@ done
 if [ "${#assets[@]}" -eq 0 ]; then
   echo "error: no files found in dist/*" >&2
   exit 1
-fi
-
-if [ -n "$GPG_FINGERPRINT" ]; then
-  shasum -a 256 "${assets[@]}" > checksums.txt
-  gpg --output checksums.txt.sig --detach-sign checksums.txt
-  assets+=(checksums.txt checksums.txt.sig)
 fi
 
 if gh release view "$tag" >/dev/null; then

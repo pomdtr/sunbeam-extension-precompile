@@ -24,7 +24,7 @@ jobs:
       - uses: actions/checkout@v3
       - uses: pomdtr/sunbeam-extension-precompile@v1
         with:
-          go_version: "1.16"
+          go_version: "1.21"
 ```
 
 Then, either push a new git tag like `v1.0.0` to your repository, or create a new Release and have it initialize the associated git tag.
